@@ -47,7 +47,7 @@ void loop() {
     Serial.println("Problem updating channel. HTTP error code " + String(x));
   }
 
-  delay(20000);
+  delay(420000);
 
 }
 

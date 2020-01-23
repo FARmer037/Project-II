@@ -33,21 +33,27 @@ Adafruit_MQTT_Publish age = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/ag
 const char* ssid = "AndroidAP";
 const char* password = "fnei9721";
 
-// Counting channel details
+// Thingspeak channel details
 unsigned long channelNumber = 963193;
+const char * myWriteAPIKey = "UVLLKJC7997PHZTL";
 const char * myReadAPIKey = "PJB25YZF2GE4Y4NC";
-unsigned int fieldNumber = 4; 
+unsigned int tempFieldNumber = 1;
+unsigned int humidFieldNumber = 2;
+unsigned int soilFieldNumber = 3;
+unsigned int lightFieldNumber = 4; 
 
 int timezone = 7 * 3600;                      //ค่า TimeZone ตามเวลาประเทศไทย
 int dst = 0;                                  //ค่า Date Swing Time
 
-time_t plant = 1579172303‬;                    //ค่าเวลาปลูก (จำนวนวินาทีตั้งแต่ 1 มกราคม 1900 เวลา 00:00:00)
+time_t plant = 1579172303;                    //ค่าเวลาปลูก (จำนวนวินาทีตั้งแต่ 1 มกราคม 1900 เวลา 00:00:00)
 
 int soil_sensor = 34;
 int led_wifi_status = 32;
 
-const unsigned long eventInterval = 300000;
-unsigned long previousTime = 0;
+const unsigned long eventIntervalTh = 420000;       // 7 นาที
+const unsigned long eventIntervalAd = 660000;       // 11 นาที
+unsigned long previousTimeTh = 0;
+unsigned long previousTimeAd = 0;
 
 //------------------------------------------------SETUP FUNCTION-------------------------------------------------------------------//
 void setup() {
@@ -88,13 +94,20 @@ void loop() {
     unsigned long currentTime = millis();
 
     
-    // ส่งทุก ๆ 1 นาที
-    if(currentTime - previousTime >= eventInterval) {
+    // ส่งทุก ๆ 7 นาที ส่งค่าไป thingspeak, ส่งทุก ๆ 11 นาที ส่งค่าไป Ardafruit
+    if(currentTime - previousTimeTh >= eventIntervalTh) {
+      print_value(t, h, soil, ldr, n_day);
+      
+      sendDataToThingspeak(t, h, soil);
+      
+      previousTimeTh = currentTime;
+    }
+    else if(currentTime - previousTimeAd >= eventIntervalAd) {
       print_value(t, h, soil, ldr, n_day);
       
       sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
-
-      previousTime = currentTime;
+      
+      previousTimeAd = currentTime;
     }
 
     digitalWrite(led_wifi_status, 1);
@@ -120,17 +133,14 @@ int read_soil() {
 int read_ldr() {
   int statusCode = 0;
 
-  // Read in field 4 of the private channel which is a Light
-  long light = ThingSpeak.readLongField(channelNumber, fieldNumber, myReadAPIKey);
+  long light = ThingSpeak.readLongField(channelNumber, lightFieldNumber, myReadAPIKey);
 
   // Check the status of the read operation to see if it was successful
   statusCode = ThingSpeak.getLastReadStatus();
   if(statusCode == 200){
-//    Serial.println("Light from thingspeak = " + String(light));
     return light;
   }
   else{
-//    Serial.println("Problem reading channel. HTTP error code " + String(statusCode));
     return 0;
   }
 }
@@ -194,4 +204,17 @@ void sendDataToAdafruit(Adafruit_MQTT_Publish feed_t, Adafruit_MQTT_Publish feed
   else {
     Serial.println("Problem connect to the site!");
   }
+}
+
+void sendDataToThingspeak(int t, int h, int soil) {
+//  ThingSpeak.writeField(channelNumber, tempFieldNumber, t, myWriteAPIKey);
+//  ThingSpeak.writeField(channelNumber, humidFieldNumber, h, myWriteAPIKey);
+//  ThingSpeak.writeField(channelNumber, soilFieldNumber, soil, myWriteAPIKey);
+
+  // set the fields with the values
+  ThingSpeak.setField(1, t);
+  ThingSpeak.setField(2, h);
+  ThingSpeak.setField(3, soil);
+
+  ThingSpeak.writeFields(channelNumber, myWriteAPIKey);
 }
