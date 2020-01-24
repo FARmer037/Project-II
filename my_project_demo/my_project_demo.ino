@@ -177,7 +177,9 @@ int age_of_melon() {
   return age;
 }
 
-void water(int soil) {
+String currentTime() {
+  String current_t = "";
+  
   configTime(timezone, dst, "pool.ntp.org", "time.nist.gov");
   time_t now = time(nullptr);
   struct tm* p_tm = localtime(&now);
@@ -194,6 +196,18 @@ void water(int soil) {
   ntp_day += "-";  
   ntp_day += String(p_tm->tm_year + 1900);
 
+  current_t = ntp_day + " " + ntp_time;
+
+  return current_t;
+}
+
+void water(int soil) {
+  configTime(timezone, dst, "pool.ntp.org", "time.nist.gov");
+  time_t now = time(nullptr);
+  struct tm* p_tm = localtime(&now);
+  
+  String current_t = currentTime();
+
   if(soil < 80) {
     if(p_tm->tm_hour == 8 && p_tm->tm_min == 0 && p_tm->tm_sec == 0) {
       digitalWrite(pump, 1);
@@ -201,7 +215,7 @@ void water(int soil) {
       
       if(soil >= 80 || p_tm->tm_sec == 20) {
         digitalWrite(pump, 0);
-        LINE_Notify("\n" + ntp_day + " " + ntp_time + "\n" + m_Watered);
+        LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
       }
     }
@@ -211,7 +225,7 @@ void water(int soil) {
       
       if(soil >= 80 || p_tm->tm_sec == 20) {
         digitalWrite(pump, 0);
-        LINE_Notify("\n" + ntp_day + " " + ntp_time + "\n" + m_Watered);
+        LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
       }
     }
@@ -221,7 +235,7 @@ void water(int soil) {
       
       if(soil >= 80 || p_tm->tm_sec == 20) {
         digitalWrite(pump, 0);
-        LINE_Notify("\n" + ntp_day + " " + ntp_time + "\n" + m_Watered);
+        LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
       }
     }
@@ -233,23 +247,13 @@ void turnOnTheLight(int ldr) {
   time_t now = time(nullptr);
   struct tm* p_tm = localtime(&now);
 
-  ntp_time = String(p_tm->tm_hour);
-  ntp_time += ":";
-  ntp_time += String(p_tm->tm_min);
-  ntp_time += ":";
-  ntp_time += String(p_tm->tm_sec);
-  
-  ntp_day = String(p_tm->tm_mday); 
-  ntp_day += "-";
-  ntp_day += String(p_tm->tm_mon + 1);
-  ntp_day += "-";  
-  ntp_day += String(p_tm->tm_year + 1900);
+  String current_t = currentTime();
 
   if((p_tm->tm_hour >= 18) || p_tm->tm_hour <= 6 || ldr < 50) {
     digitalWrite(led, 1);
 
     if(state_light == 0) {
-      LINE_Notify("\n" + ntp_day + " " + ntp_time + "\n" + m_TernOn);
+      LINE_Notify("\n" + current_t + "\n" + m_TernOn);
       sendStatusToAdafruit(lightswitch, "ON");
       state_light = 1;
     }
@@ -258,7 +262,7 @@ void turnOnTheLight(int ldr) {
     digitalWrite(led, 0);
 
     if(state_light == 1) {
-      LINE_Notify("\n" + ntp_day + " " + ntp_time + "\n" + m_TernOff);
+      LINE_Notify("\n" + current_t + "\n" + m_TernOff);
       sendStatusToAdafruit(lightswitch, "OFF");
       state_light = 0;
     }
