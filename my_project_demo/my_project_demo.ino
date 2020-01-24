@@ -33,6 +33,10 @@ Adafruit_MQTT_Publish age = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/ag
 String m_Watered = "%E0%B8%A3%E0%B8%94%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%20!";    //  รดน้ำแล้ว!
 String m_TernOn = "%E0%B9%80%E0%B8%9B%E0%B8%B4%E0%B8%94%E0%B9%84%E0%B8%9F%20LED%20Grow%20Light%20%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%20!";   //  เปิดไฟ LED Grow Light แล้ว !
 String m_TernOff = "%E0%B8%9B%E0%B8%B4%E0%B8%94%E0%B9%84%E0%B8%9F%20LED%20Grow%20Light%20%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%20!";           //  ปิดไฟ LED Grow Light แล้ว !
+String m_temp = "%E0%B8%AD%E0%B8%B8%E0%B8%93%E0%B8%AB%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4";                                                                     //  อุณหภูมิ
+String m_humid = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%99%E0%B9%83%E0%B8%99%E0%B8%AD%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%A8";      //  ความชื้นในอากาศ
+String m_soil = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%99%E0%B9%83%E0%B8%99%E0%B8%94%E0%B8%B4%E0%B8%99";                        //  ความชื้นในดิน
+String m_light = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%A1%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%87";               //  ความเข้มของแสง
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 //const char* ssid = "SmartFarmNet";
@@ -111,6 +115,8 @@ void loop() {
     int ldr = read_ldr();
     int n_day = age_of_melon();
 
+    String current_t = currentTime();
+    
     unsigned long currentTime = millis();
 
     // ส่งทุก ๆ 7 นาที ส่งค่าไป thingspeak, ส่งทุก ๆ 11 นาที ส่งค่าไป Ardafruit
@@ -122,9 +128,13 @@ void loop() {
       previousTimeTh = currentTime;
     }
     else if(currentTime - previousTimeAd >= eventIntervalAd) {
-      print_value(t, h, soil, ldr, n_day);
-      
       sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
+
+      LINE_Notify("\n" + current_t + "\n" + 
+                m_temp + " : " + t + "%C2%B0C" + "\n" + 
+                m_humid + " : " + h + " %25" + "\n" +
+                m_soil + " : " + soil + " %25" + "\n" +
+                m_light + " : " + ldr + " %25");
       
       previousTimeAd = currentTime;
     }
