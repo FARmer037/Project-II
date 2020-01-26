@@ -139,7 +139,7 @@ void loop() {
       previousTimeAd = currentTime;
     }
 
-    water(soil);
+    water(n_day);
     turnOnTheLight(ldr);
 
     digitalWrite(led_wifi_status, 1);
@@ -211,39 +211,66 @@ String currentTime() {
   return current_t;
 }
 
-void water(int soil) {
+void water(int age) {
   configTime(timezone, dst, "pool.ntp.org", "time.nist.gov");
   time_t now = time(nullptr);
   struct tm* p_tm = localtime(&now);
   
   String current_t = currentTime();
 
-  if(soil < 80) {
-    if(p_tm->tm_hour == 8 && p_tm->tm_min == 0 && p_tm->tm_sec == 0) {
-      digitalWrite(pump, 1);
-      sendStatusToAdafruit(pumpswitch, "ON");
-      
-      if(soil >= 80 || p_tm->tm_sec == 20) {
+  if (age <= 14) {
+    if (p_tm->tm_hour == 8) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+        digitalWrite(pump, 1);
+        sendStatusToAdafruit(pumpswitch, "ON");
+      }
+      else {
         digitalWrite(pump, 0);
         LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
       }
     }
-    else if(p_tm->tm_hour == 11 && p_tm->tm_min == 0 && p_tm->tm_sec == 0) {
-      digitalWrite(pump, 1);
-      sendStatusToAdafruit(pumpswitch, "ON");
-      
-      if(soil >= 80 || p_tm->tm_sec == 20) {
+    else if (p_tm->tm_hour == 15) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+        digitalWrite(pump, 1);
+        sendStatusToAdafruit(pumpswitch, "ON");
+      }
+      else {
         digitalWrite(pump, 0);
         LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
       }
     }
-    else if(p_tm->tm_hour == 14 && p_tm->tm_min == 0 && p_tm->tm_sec == 0) {
-      digitalWrite(pump, 1);
-      sendStatusToAdafruit(pumpswitch, "ON");
-      
-      if(soil >= 80 || p_tm->tm_sec == 20) {
+  }
+  else if (age > 14) {
+    if (p_tm->tm_hour == 8) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+        digitalWrite(pump, 1);
+        sendStatusToAdafruit(pumpswitch, "ON");
+      }
+      else {
+        digitalWrite(pump, 0);
+        LINE_Notify("\n" + current_t + "\n" + m_Watered);
+        sendStatusToAdafruit(pumpswitch, "OFF");
+      }
+    }
+    else if (p_tm->tm_hour == 11) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+        digitalWrite(pump, 1);
+        sendStatusToAdafruit(pumpswitch, "ON");
+      }
+      else {
+        digitalWrite(pump, 0);
+        LINE_Notify("\n" + current_t + "\n" + m_Watered);
+        sendStatusToAdafruit(pumpswitch, "OFF");
+      }
+    }
+    else if (p_tm->tm_hour == 14) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+        digitalWrite(pump, 1);
+        sendStatusToAdafruit(pumpswitch, "ON");
+      }
+      else {
         digitalWrite(pump, 0);
         LINE_Notify("\n" + current_t + "\n" + m_Watered);
         sendStatusToAdafruit(pumpswitch, "OFF");
