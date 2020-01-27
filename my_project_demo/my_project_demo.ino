@@ -62,6 +62,8 @@ String ntp_time = "";
 time_t plant = 1579172303;                    //ค่าเวลาปลูก (จำนวนวินาทีตั้งแต่ 1 มกราคม 1900 เวลา 00:00:00)
 
 //-----------------------SET PIN-----------------------------------------//
+int relay_fog = 26;
+int relay_fan = 27;
 int pump = 32;
 int led = 33;
 int soil_sensor = 34;
@@ -79,6 +81,8 @@ unsigned long previousTimeAd = 0;
 
 //------------------------------------------------SETUP FUNCTION-------------------------------------------------------------------//
 void setup() {
+  pinMode(relay_fog, OUTPUT);
+  pinMode(relay_fan, OUTPUT);
   pinMode(pump, OUTPUT);
   pinMode(led, OUTPUT);
   pinMode(led_wifi_status, OUTPUT);
@@ -141,6 +145,9 @@ void loop() {
 
     water(n_day);
     turnOnTheLight(ldr);
+
+    t > 55 ? digitalWrite(relay_fog, 1) : digitalWrite(relay_fog, 0);
+    h > 90 ? digitalWrite(relay_fan, 1) : digitalWrite(relay_fan, 0);
 
     digitalWrite(led_wifi_status, 1);
   }
