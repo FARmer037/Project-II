@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <time.h>
 #include <DHT.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -64,8 +65,8 @@ time_t plant = 1579172303;                    //ค่าเวลาปลู�
 //-----------------------SET PIN-----------------------------------------//
 int relay_fog = 26;
 int relay_fan = 27;
-int pump = 32;
-int led = 33;
+int relay_pump = 25;
+int relay_led = 33;
 int soil_sensor = 34;
 int led_wifi_status = 32;
 
@@ -83,8 +84,8 @@ unsigned long previousTimeAd = 0;
 void setup() {
   pinMode(relay_fog, OUTPUT);
   pinMode(relay_fan, OUTPUT);
-  pinMode(pump, OUTPUT);
-  pinMode(led, OUTPUT);
+  pinMode(relay_pump, OUTPUT);
+  pinMode(relay_led, OUTPUT);
   pinMode(led_wifi_status, OUTPUT);
   digitalWrite(led_wifi_status, 0);
   
@@ -125,6 +126,7 @@ void loop() {
 
     // ส่งทุก ๆ 7 นาที ส่งค่าไป thingspeak, ส่งทุก ๆ 11 นาที ส่งค่าไป Ardafruit
     if(currentTime - previousTimeTh >= eventIntervalTh) {
+      Serial.println("7 minute");
       print_value(t, h, soil, ldr, n_day);
       
       sendDataToThingspeak(t, h, soil);
@@ -132,6 +134,7 @@ void loop() {
       previousTimeTh = currentTime;
     }
     else if(currentTime - previousTimeAd >= eventIntervalAd) {
+      Serial.println("11 minute");
       sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
 
       LINE_Notify("\n" + current_t + "\n" + 
@@ -228,59 +231,99 @@ void water(int age) {
   if (age <= 14) {
     if (p_tm->tm_hour == 8) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
-        digitalWrite(pump, 1);
-        sendStatusToAdafruit(pumpswitch, "ON");
+        digitalWrite(relay_pump, 1);
+        
+        if (state_water == 0) {
+          sendStatusToAdafruit(pumpswitch, "ON");
+          state_water = 1;
+        }
       }
       else {
-        digitalWrite(pump, 0);
-        LINE_Notify("\n" + current_t + "\n" + m_Watered);
-        sendStatusToAdafruit(pumpswitch, "OFF");
+        digitalWrite(relay_pump, 0);
+
+        if (state_water == 1) {
+          LINE_Notify("\n" + current_t + "\n" + m_Watered);
+          sendStatusToAdafruit(pumpswitch, "OFF");
+          state_water = 0;
+        }
       }
     }
     else if (p_tm->tm_hour == 15) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
-        digitalWrite(pump, 1);
-        sendStatusToAdafruit(pumpswitch, "ON");
+        digitalWrite(relay_pump, 1);
+        
+        if (state_water == 0) {
+          sendStatusToAdafruit(pumpswitch, "ON");
+          state_water = 1;
+        }
       }
       else {
-        digitalWrite(pump, 0);
-        LINE_Notify("\n" + current_t + "\n" + m_Watered);
-        sendStatusToAdafruit(pumpswitch, "OFF");
+        digitalWrite(relay_pump, 0);
+        
+        if (state_water == 1) {
+          LINE_Notify("\n" + current_t + "\n" + m_Watered);
+          sendStatusToAdafruit(pumpswitch, "OFF");
+          state_water = 0;
+        }
       }
     }
   }
   else if (age > 14) {
     if (p_tm->tm_hour == 8) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
-        digitalWrite(pump, 1);
-        sendStatusToAdafruit(pumpswitch, "ON");
+        digitalWrite(relay_pump, 1);
+        
+        if (state_water == 0) {
+          sendStatusToAdafruit(pumpswitch, "ON");
+          state_water = 1;
+        }
       }
       else {
-        digitalWrite(pump, 0);
-        LINE_Notify("\n" + current_t + "\n" + m_Watered);
-        sendStatusToAdafruit(pumpswitch, "OFF");
+        digitalWrite(relay_pump, 0);
+        
+        if (state_water == 1) {
+          LINE_Notify("\n" + current_t + "\n" + m_Watered);
+          sendStatusToAdafruit(pumpswitch, "OFF");
+          state_water = 0;
+        }
       }
     }
-    else if (p_tm->tm_hour == 11) {
+    else if (p_tm->tm_hour == 12) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
-        digitalWrite(pump, 1);
-        sendStatusToAdafruit(pumpswitch, "ON");
+        digitalWrite(relay_pump, 1);
+        
+        if (state_water == 0) {
+          sendStatusToAdafruit(pumpswitch, "ON");
+          state_water = 1;
+        }
       }
       else {
-        digitalWrite(pump, 0);
-        LINE_Notify("\n" + current_t + "\n" + m_Watered);
-        sendStatusToAdafruit(pumpswitch, "OFF");
+        digitalWrite(relay_pump, 0);
+        
+        if (state_water == 1) {
+          LINE_Notify("\n" + current_t + "\n" + m_Watered);
+          sendStatusToAdafruit(pumpswitch, "OFF");
+          state_water = 0;
+        }
       }
     }
-    else if (p_tm->tm_hour == 14) {
+    else if (p_tm->tm_hour == 15) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
-        digitalWrite(pump, 1);
-        sendStatusToAdafruit(pumpswitch, "ON");
+        digitalWrite(relay_pump, 1);
+        
+        if (state_water == 0) {
+          sendStatusToAdafruit(pumpswitch, "ON");
+          state_water = 1;
+        }
       }
       else {
-        digitalWrite(pump, 0);
-        LINE_Notify("\n" + current_t + "\n" + m_Watered);
-        sendStatusToAdafruit(pumpswitch, "OFF");
+        digitalWrite(relay_pump, 0);
+        
+        if (state_water == 1) {
+          LINE_Notify("\n" + current_t + "\n" + m_Watered);
+          sendStatusToAdafruit(pumpswitch, "OFF");
+          state_water = 0;
+        }
       }
     }
   }
@@ -294,7 +337,7 @@ void turnOnTheLight(int ldr) {
   String current_t = currentTime();
 
   if((p_tm->tm_hour >= 18) || p_tm->tm_hour <= 6 || ldr < 50) {
-    digitalWrite(led, 1);
+    digitalWrite(relay_led, 1);
 
     if(state_light == 0) {
       LINE_Notify("\n" + current_t + "\n" + m_TernOn);
@@ -303,7 +346,7 @@ void turnOnTheLight(int ldr) {
     }
   }
   else {
-    digitalWrite(led, 0);
+    digitalWrite(relay_led, 0);
 
     if(state_light == 1) {
       LINE_Notify("\n" + current_t + "\n" + m_TernOff);
@@ -353,7 +396,7 @@ void sendDataToAdafruit(Adafruit_MQTT_Publish feed_t, Adafruit_MQTT_Publish feed
                         Adafruit_MQTT_Publish feed_n_day, int t, int h, int soil, int ldr, int n_day) {
   if (MQTT_connect()) {
     if(feed_t.publish(t) && feed_h.publish(h) && feed_soil.publish(soil) && feed_ldr.publish(ldr) && feed_n_day.publish(n_day)) {
-      Serial.println("Data sent successfully.");
+      Serial.println("Sensors sent successfully.");
     }
     else {
       Serial.println("Problem to send the data!");
@@ -367,7 +410,7 @@ void sendDataToAdafruit(Adafruit_MQTT_Publish feed_t, Adafruit_MQTT_Publish feed
 void sendStatusToAdafruit(Adafruit_MQTT_Publish feed, const char* sw_status) {
   if (MQTT_connect()) {
     if(feed.publish(sw_status)) {
-      Serial.println("Data sent successfully.");
+      Serial.println("sw_status sent successfully.");
     }
     else {
       Serial.println("Problem to send the data!");

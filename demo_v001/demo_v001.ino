@@ -63,8 +63,8 @@ int age_of_melon() {
   double diff = difftime(now, plant);
   int age = diff/86400;
 
-  Serial.print("Age = ");
-  Serial.println(age);
+//  Serial.print("Age = ");
+//  Serial.println(age);
 
   return age;
 }
@@ -107,7 +107,9 @@ void water(int age) {
       
         /* 
          * digitalWrite(relay_pump, 1);
+         * if (pump_status == 0) {
          * sendStatusToAdafruit(pumpswitch, "ON");
+         * }
          */
          
         pump_status = 1;
@@ -136,7 +138,9 @@ void water(int age) {
         
         /* 
          * digitalWrite(relay_pump, 1);
+         * if (pump_status == 0) {
          * sendStatusToAdafruit(pumpswitch, "ON");
+         * }
          */
          
         pump_status = 1;
@@ -167,7 +171,9 @@ void water(int age) {
       
         /* 
          * digitalWrite(relay_pump, 1);
+         * if (pump_status == 0) {
          * sendStatusToAdafruit(pumpswitch, "ON");
+         * }
          */
          
         pump_status = 1;
@@ -196,7 +202,9 @@ void water(int age) {
       
         /* 
          * digitalWrite(relay_pump, 1);
+         * if (pump_status == 0) {
          * sendStatusToAdafruit(pumpswitch, "ON");
+         * }
          */
          
         pump_status = 1;
@@ -225,7 +233,9 @@ void water(int age) {
         
         /* 
          * digitalWrite(relay_pump, 1);
+         * if (pump_status == 0) {
          * sendStatusToAdafruit(pumpswitch, "ON");
+         * }
          */
          
         pump_status = 1;
