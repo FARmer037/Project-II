@@ -40,10 +40,10 @@ String m_soil = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89
 String m_light = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%A1%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%87";               //  ความเข้มของแสง
 
 //--------------------------------------------------------------------------------------------------------------------------------//
-//const char* ssid = "SmartFarmNet";
-//const char* password = "aptx4869";
-const char* ssid = "AndroidAP";
-const char* password = "fnei9721";
+const char* ssid = "SmartFarmNet";
+const char* password = "aptx4869";
+//const char* ssid = "AndroidAP";
+//const char* password = "fnei9721";
 
 // Thingspeak channel details
 unsigned long channelNumber = 963193;
@@ -75,8 +75,7 @@ int state_water = 0;
 int state_light = 0;
 int state_day = 100;
 
-const unsigned long eventIntervalTh = 420000;       // 7 นาที
-const unsigned long eventIntervalAd = 660000;       // 11 นาที
+const unsigned long eventIntervalAd = 600000;
 unsigned long previousTimeTh = 0;
 unsigned long previousTimeAd = 0;
 
@@ -124,18 +123,13 @@ void loop() {
     
     unsigned long currentTime = millis();
 
-    // ส่งทุก ๆ 7 นาที ส่งค่าไป thingspeak, ส่งทุก ๆ 11 นาที ส่งค่าไป Ardafruit
-    if(currentTime - previousTimeTh >= eventIntervalTh) {
-      Serial.println("7 minute");
+    // ทุก ๆ 10 นาที ส่งค่าไป Ardafruit
+    if(currentTime - previousTimeAd >= eventIntervalAd) {
       print_value(t, h, soil, ldr, n_day);
       
-      sendDataToThingspeak(t, h, soil);
-      
-      previousTimeTh = currentTime;
-    }
-    else if(currentTime - previousTimeAd >= eventIntervalAd) {
-      Serial.println("11 minute");
-      sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
+      if (t < 100 || h < 100) {
+        sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
+      }
 
       LINE_Notify("\n" + current_t + "\n" + 
                 m_temp + " : " + t + "%C2%B0C" + "\n" + 
@@ -183,7 +177,7 @@ int read_ldr() {
     return light;
   }
   else{
-    return 0;
+    Serial.println("Cannot read data from Thingspeak");
   }
 }
 
@@ -230,7 +224,7 @@ void water(int age) {
 
   if (age <= 14) {
     if (p_tm->tm_hour == 8) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
         if (state_water == 0) {
@@ -249,7 +243,7 @@ void water(int age) {
       }
     }
     else if (p_tm->tm_hour == 15) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
         if (state_water == 0) {
@@ -270,7 +264,7 @@ void water(int age) {
   }
   else if (age > 14) {
     if (p_tm->tm_hour == 8) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
         if (state_water == 0) {
@@ -289,7 +283,7 @@ void water(int age) {
       }
     }
     else if (p_tm->tm_hour == 12) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
         if (state_water == 0) {
@@ -308,7 +302,7 @@ void water(int age) {
       }
     }
     else if (p_tm->tm_hour == 15) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 20) {
+      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
         if (state_water == 0) {
@@ -336,11 +330,11 @@ void turnOnTheLight(int ldr) {
 
   String current_t = currentTime();
 
-  if((p_tm->tm_hour >= 18) || p_tm->tm_hour <= 6 || ldr < 50) {
+  if((p_tm->tm_hour >= 19) || p_tm->tm_hour <= 6 || ldr < 50) {
     digitalWrite(relay_led, 1);
 
     if(state_light == 0) {
-      LINE_Notify("\n" + current_t + "\n" + m_TernOn);
+      LINE_Notify("\n" + current_t + "\n" + m_TernOn + "\n" + "Light = " + ldr);
       sendStatusToAdafruit(lightswitch, "ON");
       state_light = 1;
     }
@@ -349,7 +343,7 @@ void turnOnTheLight(int ldr) {
     digitalWrite(relay_led, 0);
 
     if(state_light == 1) {
-      LINE_Notify("\n" + current_t + "\n" + m_TernOff);
+      LINE_Notify("\n" + current_t + "\n" + m_TernOff + "\n" + "Light = " + ldr);
       sendStatusToAdafruit(lightswitch, "OFF");
       state_light = 0;
     }
@@ -423,9 +417,9 @@ void sendStatusToAdafruit(Adafruit_MQTT_Publish feed, const char* sw_status) {
 
 void sendDataToThingspeak(int t, int h, int soil) {
   // set the fields with the values
-  ThingSpeak.setField(1, t);
-  ThingSpeak.setField(2, h);
-  ThingSpeak.setField(3, soil);
+  ThingSpeak.setField(tempFieldNumber, t);
+  ThingSpeak.setField(humidFieldNumber, h);
+  ThingSpeak.setField(soilFieldNumber, soil);
 
   ThingSpeak.writeFields(channelNumber, myWriteAPIKey);
 }
