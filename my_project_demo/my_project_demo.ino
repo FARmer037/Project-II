@@ -40,10 +40,10 @@ String m_soil = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%89
 String m_light = "%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%A1%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%87";               //  ความเข้มของแสง
 
 //--------------------------------------------------------------------------------------------------------------------------------//
-const char* ssid = "SmartFarmNet";
-const char* password = "aptx4869";
-//const char* ssid = "AndroidAP";
-//const char* password = "fnei9721";
+//const char* ssid = "SmartFarmNet";
+//const char* password = "aptx4869";
+const char* ssid = "AndroidAP";
+const char* password = "fnei9721";
 
 // Thingspeak channel details
 unsigned long channelNumber = 963193;
@@ -127,7 +127,7 @@ void loop() {
     if(currentTime - previousTimeAd >= eventIntervalAd) {
       print_value(t, h, soil, ldr, n_day);
       
-      if (t < 100 || h < 100) {
+      if (t < 100 || h < 100 || ldr < 100) {
         sendDataToAdafruit(temp, humidity, soilmoisture, lightintensity, age, t, h, soil, ldr, n_day);
       }
 
@@ -177,7 +177,8 @@ int read_ldr() {
     return light;
   }
   else{
-    Serial.println("Cannot read data from Thingspeak");
+    return 404;
+    LINE_Notify("Cannot read data from Thingspeak");
   }
 }
 
@@ -223,7 +224,7 @@ void water(int age) {
   String current_t = currentTime();
 
   if (age <= 14) {
-    if (p_tm->tm_hour == 8) {
+    if (p_tm->tm_hour == 8 || p_tm->tm_hour == 15) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
@@ -242,66 +243,9 @@ void water(int age) {
         }
       }
     }
-    else if (p_tm->tm_hour == 15) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
-        digitalWrite(relay_pump, 1);
-        
-        if (state_water == 0) {
-          sendStatusToAdafruit(pumpswitch, "ON");
-          state_water = 1;
-        }
-      }
-      else {
-        digitalWrite(relay_pump, 0);
-        
-        if (state_water == 1) {
-          LINE_Notify("\n" + current_t + "\n" + m_Watered);
-          sendStatusToAdafruit(pumpswitch, "OFF");
-          state_water = 0;
-        }
-      }
-    }
   }
   else if (age > 14) {
-    if (p_tm->tm_hour == 8) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
-        digitalWrite(relay_pump, 1);
-        
-        if (state_water == 0) {
-          sendStatusToAdafruit(pumpswitch, "ON");
-          state_water = 1;
-        }
-      }
-      else {
-        digitalWrite(relay_pump, 0);
-        
-        if (state_water == 1) {
-          LINE_Notify("\n" + current_t + "\n" + m_Watered);
-          sendStatusToAdafruit(pumpswitch, "OFF");
-          state_water = 0;
-        }
-      }
-    }
-    else if (p_tm->tm_hour == 12) {
-      if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
-        digitalWrite(relay_pump, 1);
-        
-        if (state_water == 0) {
-          sendStatusToAdafruit(pumpswitch, "ON");
-          state_water = 1;
-        }
-      }
-      else {
-        digitalWrite(relay_pump, 0);
-        
-        if (state_water == 1) {
-          LINE_Notify("\n" + current_t + "\n" + m_Watered);
-          sendStatusToAdafruit(pumpswitch, "OFF");
-          state_water = 0;
-        }
-      }
-    }
-    else if (p_tm->tm_hour == 15) {
+    if (p_tm->tm_hour == 8 || p_tm->tm_hour == 12 || p_tm->tm_hour == 15) {
       if (p_tm->tm_min == 0 && p_tm->tm_sec <= 25) {
         digitalWrite(relay_pump, 1);
         
